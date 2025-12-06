@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NL → Regex → Automata | Abdullah & Sarmad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #0055ff;
+      --dark: #0a0a1f;
+      --light: #f8faff;
+      --gray: #64748b;
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --glow: 0 0 30px rgba(0, 85, 255, 0.4);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--dark);
+      color: #e2e8f0;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    .hero {
+      min-height: 100vh;
+      background: var(--gradient);
+      padding: 100px 20px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><circle cx="200" cy="200" r="80" fill="%23ffffff10"/><circle cx="800" cy="300" r="120" fill="%23664eea30"/><circle cx="400" cy="700" r="100" fill="%23764ba240"/></svg>');
+      opacity: 0.3;
+    }
+    .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
+    h1 {
+      font-size: 4.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ffffff, #a0d8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: var(--glow);
+    }
+    .subtitle {
+      font-size: 1.6rem;
+      text-align: center;
+      color: #cbd5e1;
+      margin-bottom: 40px;
+      opacity: 0.9;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      padding: 10px 25px;
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      font-weight: 600;
+      margin: 10px;
+    }
+    .section {
+      padding: 100px 20px;
+      background: var(--dark);
+    }
+    .section:nth-child(even) { background: #0f0f2b; }
+    h2 {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 60px;
+      color: #ffffff;
+      position: relative;
+    }
+    h2::after {
+      content: '';
+      width: 100px;
+      height: 5px;
+      background: var(--primary);
+      display: block;
+      margin: 20px auto;
+      border-radius: 3px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin: 60px 0;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      padding: 35px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.4s;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card:hover {
+      transform: translateY(-15px);
+      box-shadow: var(--glow), 0 20px 40px rgba(0,0,0,0.4);
+      border-color: var(--primary);
+    }
+    .card i {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      margin: 50px 0;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+    th {
+      background: var(--primary);
+      padding: 20px;
+      font-size: 1.2rem;
+      color: white;
+    }
+    td {
+      padding: 18px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .yes { color: #34d399; font-weight: bold; }
+    .no { color: #f87171; }
+    .team {
+      text-align: center;
+      padding: 120px 20px;
+      background: linear-gradient(135deg, #1e1b4b, #0f0f2b);
+    }
+    .team-photos {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+      margin: 50px 0;
+    }
+    .photo {
+      text-align: center;
+    }
+    .photo img {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 6px solid var(--primary);
+      box-shadow: var(--glow), 0 20px 40px rgba(0,0,0,0.5);
+      transition: all 0.4s;
+    }
+    .photo img:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 0 60px rgba(0, 85, 255, 0.8);
+    }
+    .name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 20px 0 10px;
+      color: white;
+    }
+    footer {
+      text-align: center;
+      padding: 60px 20px;
+      background: #000428;
+      color: #64748b;
+    }
+    .glow-btn {
+      background: var(--primary);
+      color: white;
+      padding: 15px 40px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: var(--glow);
+      transition: all 0.3s;
+      margin-top: 30px;
+    }
+    .glow-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 50px rgba(0, 85, 255, 0.8);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="container">
+      <h1>NL → Regex → Automata</h1>
+      <p class="subtitle">We present privacy preserving AI powered regular expression to finite automata visualizer that converts natural language descriptions into accurate regular expressions and instantly displays both NFA and DFA all without a single byte of data leaving the user’s device. By integrating Google’s Gemma-2B large language model through Ollama running entirely on the local machine, our system eliminates dependency on cloud APIs, ensuring complete data privacy and zero internet requirement after initial setup. Unlike existing solutions that either rely on paid cloud LLMs (compromising privacy) or lack visual automata output, our tool combines state-of-the-art local artificial intelligence with a beautifully redesigned, centered, white themed interface making the complex concepts of regular expressions and finite automata intuitive and accessible to students for the very first time. This work represents a significant leap forward in educational tools for the Theory of Automata</p>
+      <div>
+        <span class="badge">Local LLM</span>
+        <span class="badge">Zero Cloud</span>
+        <span class="badge">Full NFA + DFA</span>
+        <span class="badge">Privacy First</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <h2>Revolutionary Features</h2>
+      <div class="features">
+        <div class="card"><i class="fas fa-brain"></i><h3>AI Powered</h3><p>Just type English — Gemma-2B converts it to perfect regex</p></div>
+        <div class="card"><i class="fas fa-shield-alt"></i><h3>100% Offline</h3><p>Runs completely on your laptop — no data ever leaves</p></div>
+        <div class="card"><i class="fas fa-eye"></i><h3>Instant Visualization</h3><p>See both NFA and DFA in beautiful centered layout</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <h2>State-of-the-Art Comparison</h2>
+      <table>
+        <tr><th>Feature</th><th>Previous Works</th><th>Our Project</th></tr>
+        <tr><td>Uses LLM</td><td class="no">Only cloud</td><td class="yes">Local Gemma-2B</td></tr>
+        <tr><td>100% Offline</td><td class="no">No</td><td class="yes">Yes</td></tr>
+        <tr><td>Privacy</td><td class="no">Data sent</td><td class="yes">Zero leak</td></tr>
+        <tr><td>NFA + DFA Display</td><td class="no">None</td><td class="yes">Full</td></tr>
+        <tr><td>Free Forever</td><td class="no">Paid API</td><td class="yes">Yes</td></tr>
+      </table>
+      <p style="text-align:center; font-size:1.4rem; margin-top:30px;">
+      </p>
+    </div>
+  </div>
+
+  <div class="team">
+    <div class="container">
+      <h2 style="color:white;">Created By</h2>
+      <div class="team-photos">
+        <div class="photo">
+          <img src="abdullah.jpeg" alt="Abdullah" />
+          <div class="name">Abdullah</div>
+        </div>
+        <div class="photo">
+          <img src="sarmad.jpeg" alt="Sarmad" />
+          <div class="name">Sarmad</div>
+        </div>
+      </div>
+      <p style="font-size:1.4rem; margin-top:30px;">
+        Under the supervision of <strong>Dr. Sohail Iqbal</strong><br>
+        Theory of Automata • Semester Project • 2025
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Abdullah & Sarmad — The Future of Offline AI for Education</p>
+    <br>
+  </footer>
+
+</body>
+</html>
